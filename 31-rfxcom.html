@@ -1,0 +1,150 @@
+<!--
+  Copyright 2013 Freak Enterprises
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  
+  NR-XBee - Node-RED module to support use of XBee wireless modules
+  Highly inspired by Node-RED's own serial and mqtt modules. 
+
+-->
+
+<script type="text/x-red" data-template-name="rfxcom in">
+    <div class="form-row node-input-serial">
+        <label for="node-input-serial"><i class="icon-bullhorn"></i> Serial Port</label>
+        <input type="text" id="node-input-serial">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-tips">
+    	Tip: the XBee address of the message source is available in <b>msg.source</b>.<br>
+    	XBee addresses are specified as base64 Hex strings, e.g. 0013a200408b9437. 
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="rfxcom in">
+	<p>Provides an inbound connection to an XBEE network through an XBee module connected to this computer's serial port. </p>
+	<p>The address of the XBee module from which the message was originally sent is available in  <b>msg.source</b>.
+	Not sure yet what happens if it receives an IO packet!!
+	</p>
+	<p>XBee addresses are specified as base64 Hex strings, e.g. 0013a200408b9437. </p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('rfxcom in',{
+        category: 'input',
+        defaults: {
+			name: { name: "" },
+            serial: { type: "serial-port", required:true }
+        },
+        color:"#fcfebd",
+        inputs:0,
+        outputs:1,
+        icon: "serial.png",
+        label: function() {
+            var serialNode = RED.nodes.node(this.serial);
+            return this.name||(serialNode?serialNode.label():"rfxcom");
+        }, 
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        }
+    });
+    
+</script>
+
+
+<script type="text/x-red" data-template-name="rfxcom out">
+    <div class="form-row node-input-serial">
+        <label for="node-input-serial"><i class="icon-bullhorn"></i> Serial Port</label>
+        <input type="text" id="node-input-serial">
+    </div>
+    
+    <div class="form-row">
+        <label for="node-input-subtype"><i class="icon-wrench"></i> SubType</label>
+        <select type="text" id="node-input-subtype" style="width: 284px;">
+            <option value="LightwaveRF">LightwaveRF</option>
+            <option value="57600">57600</option>
+            <option value="38400">38400</option>
+            <option value="19200">19200</option>
+            <option value="9600">9600</option>
+            <option value="4800">4800</option>
+            <option value="2400">2400</option>
+            <option value="1800">1800</option>
+            <option value="1200">1200</option>
+            <option value="600">600</option>
+            <option value="300">300</option>
+            <option value="200">200</option>
+            <option value="150">150</option>
+            <option value="134">134</option>
+            <option value="110">110</option>
+            <option value="75">75</option>
+            <option value="50">50</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-deviceid"><i class="icon-road"></i> Device ID</label>
+        <input type="text" id="node-input-deviceid" placeholder="e.g. 0xF13283/1">
+    </div>
+    <div class="form-row">
+        <label for="node-input-command"><i class="icon-play-circle"></i> Command</label>
+        <input type="text" id="node-input-command" placeholder="switchOn|switchOff ">
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-tips">
+    	Tip: leave Device ID blank and <b>msg.payload</b> will be sent to the device with 
+    	the ID in <b>msg.deviceid</b>.<br>
+    	Device IDs are specified in hex, e.g. 0xF13283/1. 
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="rfxcom out">
+	<p>Provides an outbound connection to 433mhz wireless devices through an RFXCOM 
+		transceiver connected to this computer's USB port. </p>
+	<p>The ID of the Device to send the message to can either be set in this node's configuration or passed as a parameter 
+	in <b>msg.deviceid</b>. The <b>msg.payload</b> must contain a JSON object with the key <b>command</b>.</p>
+	<p>Device ID is specified in Hex, e.g. 0xF13283/1. </p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('rfxcom out',{
+        category: 'output',
+        defaults: {
+			name: {name:""},
+			subtype: {name:""},
+			command: {name:""},
+            serial: {type:"serial-port",required:true},
+            deviceid: {name:""}
+        },
+        color:"#fcfebd",
+        inputs:1,
+        outputs:0,
+        icon: "serial.png",
+        align: "right",
+        label: function() {
+            var serialNode = RED.nodes.node(this.serial);
+            return this.name||(this.destination?"rxfcom "+this.destination:(serialNode?serialNode.label():"rfxcom"));
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        }
+    });
+
+</script>
+
+
