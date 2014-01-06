@@ -51,7 +51,7 @@ function RfxComInNode(n) {
 
   }
         
-    var evNames = [ 'ready', 'response', 'lighting2', 'temp1-9', 'th1-9', 'lighting5', 'security1', 'elec2', 'status' ];
+    var evNames = [ 'ready', 'response', 'lighting1', 'lighting2', 'temp1-9', 'th1-9', 'lighting5', 'security1', 'elec2', 'status' ];
 
     evNames.forEach(function (name) {
         node.rfxcom.on(name, function(event){ 
