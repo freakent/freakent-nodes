@@ -19,7 +19,7 @@
  **/
 
 // Require main module
-var RED = require("../../red/red");
+var RED = require(process.env.NODE_RED_HOME+"/red/red");
 var util = require("util");
 var SunEvents = require('./lib/sunevents.js');
 
