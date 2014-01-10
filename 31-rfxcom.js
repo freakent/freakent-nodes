@@ -134,6 +134,10 @@ var SerialPool = function() {
             		try {
             		  resource.initialise(function() { 
             		  	resource.ready = true;
+            		  	resource.on("end", function() {
+            		  	  resource.serialport.close();
+            		  	  delete pool[id];
+            		  	});
             		  	console.log("RfxCom initialised");
             		  	if (typeof callback == 'function') { callback(pool[id]) };
             		  });
@@ -142,6 +146,7 @@ var SerialPool = function() {
             		}
             		pool[id] = resource;
             }
+            
             if (!resource.ready) {console.log("resource did not initialise")};
             return pool[id];
         },
