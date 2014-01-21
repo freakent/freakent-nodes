@@ -38,29 +38,37 @@ function RfxComInNode(n) {
     return;
   }
 
+  function init(port, baud) {
+  
   try {
 
-		node.log(util.format("Get RfxCom on %s:%s from pool...", this.serialConfig.serialport, this.serialConfig.serialbaud));  
-    node.rfxcom = SerialPool.get(node.serialConfig.serialport, node.serialConfig.serialbaud);            
+    node.log(util.format("Get RfxCom on %s:%s from pool...", port, baud));  
+    node.rfxcom = SerialPool.get(port, baud);            
 
   } catch(err) {
 
-    node.log(util.format("Failed to get RfxCom on %s", this.serialConfig.serialport));
+    node.log(util.format("Failed to get RfxCom on %s", port));
     node.error(err);
     return;
 
   }
         
-    var evNames = [ 'ready', 'response', 'lighting1', 'lighting2', 'temp1-9', 'th1-9', 'lighting5', 'security1', 'elec2', 'status' ];
+    var evNames = [ 'end', 'ready', 'response', 'lighting1', 'lighting2', 'temp1-9', 'th1-9', 'lighting5', 'security1', 'elec2', 'status' ];
 
     evNames.forEach(function (name) {
         node.rfxcom.on(name, function(event){ 
-        	node.log("Received Event " + name + ": " + util.inspect(event));
+        	node.log("Received '" + name + "' Event: " + util.inspect(event));
         	node.send({payload: event});
         });
     });
+    
+    node.rfxcom.on('end', function() {
+	setTimeout(function(){ init(port, baud) }, 3000);
+    });
 
+  }
 
+  init(this.serialConfig.serialport, this.serialConfig.serialbaud);  
 }
 
 RED.nodes.registerType("rfxcom in", RfxComInNode);
@@ -81,14 +89,14 @@ function RfxComOutNode(n) {
   }
 
 	node.log(util.format("Get RfxCom on %s:%s from pool...", this.serialConfig.serialport, this.serialConfig.serialbaud));  
-  node.rfxcom = SerialPool.get(node.serialConfig.serialport, 
+        
+  node.on("input", function(msg) {
+    
+    node.rfxcom = SerialPool.get(node.serialConfig.serialport, 
                                node.serialConfig.serialbaud, 
                                function(r) { 
                                  console.log("Resource is ready " + util.inspect(r))
                                } );            
-        
-  node.on("input", function(msg) {
-    
   	if (!node.rfxcom) {
       node.error("No RfxCom module available on " + node.serialConfig.serialport); 
       return;
@@ -127,6 +135,7 @@ var SerialPool = function() {
     var pool = {};
     return {
         get: function(port,baud,callback) {
+	    console.log("Pool contains " + util.inspect(pool));
             var id = port;
             if (!pool[id]) {
             		resource = new rfxcom.RfxCom(port, {debug: true});
@@ -134,9 +143,10 @@ var SerialPool = function() {
             		try {
             		  resource.initialise(function() { 
             		  	resource.ready = true;
-            		  	resource.on("end", function() {
+            		  	resource.on('end', function() {
             		  	  resource.serialport.close();
             		  	  delete pool[id];
+				  console.log("Pool is now " + util.inspect(pool));
             		  	});
             		  	console.log("RfxCom initialised");
             		  	if (typeof callback == 'function') { callback(pool[id]) };
@@ -147,7 +157,7 @@ var SerialPool = function() {
             		pool[id] = resource;
             }
             
-            if (!resource.ready) {console.log("resource did not initialise")};
+            //if (!resource.ready) {console.log("resource did not initialise")};
             return pool[id];
         },
         closeAll: function() {
