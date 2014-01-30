@@ -95,7 +95,7 @@ function RfxComOutNode(n) {
 	node.log(util.format("Get RfxCom on %s:%s from pool...", this.serialConfig.serialport, this.serialConfig.serialbaud));  
         
     
-  function send(msg) {
+  node.on("input", function(msg) {
     node.rfxcom = SerialPool.get(node.serialConfig.serialport, 
                                node.serialConfig.serialbaud, 
                                function(r) { 
@@ -107,7 +107,7 @@ function RfxComOutNode(n) {
     }
     if(!node.rfxcom.ready) {
        node.log('RFXCOM was not ready, will try again in 10 seconds');
-       setTimeout(function(){send(msg)}, 10000);
+       setTimeout(function(){ node.emit('input', msg); }, 10000);
        return(msg);
     }
                     
@@ -126,11 +126,6 @@ function RfxComOutNode(n) {
     api = commands[node.subtype].api(node.rfxcom);
     commands[node.subtype][command](api, addr);
 
-    return(msg);
-  }
-
-  node.on("input", function(msg) {
-    return(send(msg));  
   });
     	    
 }
